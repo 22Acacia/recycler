@@ -1,0 +1,109 @@
+{
+  "provider" : {
+    "google" : {
+      "credentials" : "${file(\"/home/ubuntu/demo-config/account.json\")}",
+      "project" : "hx-test",
+      "region" : "europe-west1-c"
+    },
+    "googlecli" : {
+      "credentials" : "${file(\"/home/ubuntu/demo-config/account.json\")}",
+      "project" : "hx-test",
+      "region" : "europe-west1-c"
+    }
+  },
+  "resource" : {
+    "google_pubsub_topic" : {
+      "recyclersink_in" : {
+        "name" : "recyclersink_in"
+      },
+      "recyclersink_err" : {
+        "name" : "recyclersink_err"
+      },
+      "recycler_in" : {
+        "name" : "recycler_in"
+      },
+      "recycler_err" : {
+        "name" : "recycler_err"
+      },
+      "rec_out" : {
+        "name" : "rec_out"
+      },
+      "rec_err" : {
+        "name" : "rec_err"
+      }
+    },
+    "google_pubsub_subscription" : {
+      "recyclersink_sub" : {
+        "name" : "recyclersink_sub",
+        "topic" : "recyclersink_in",
+        "depends_on" : [ "google_pubsub_topic.recyclersink_in" ]
+      }
+    },
+    "google_container_cluster" : {
+      "hx_fstack_cluster" : {
+        "name" : "recycler",
+        "initial_node_count" : 3,
+        "master_auth" : {
+          "username" : "hx",
+          "password" : "hstack"
+        },
+        "zone" : "europe-west1-c",
+        "node_config" : {
+          "oauth_scopes" : [ "https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/cloud-platform" ]
+        }
+      }
+    },
+    "googlecli_container_replica_controller" : {
+      "rec-source" : {
+        "name" : "rec-source",
+        "docker_image" : "gcr.io/hx-test/source-master",
+        "external_port" : "8080",
+        "container_name" : "${google_container_cluster.hx_fstack_cluster.name}",
+        "zone" : "europe-west1-c",
+        "env_args" : {
+          "post_route" : "/rec/post",
+          "health_route" : "/rec/health",
+          "stream_name" : "projects/hx-test/topics/rec_out"
+        }
+      },
+      "recyclersink-sink" : {
+        "name" : "recyclersink-sink",
+        "docker_image" : "gcr.io/hx-test/store-sink",
+        "container_name" : "${google_container_cluster.hx_fstack_cluster.name}",
+        "zone" : "europe-west1-c",
+        "env_args" : {
+          "num_retries" : 3,
+          "batch_size" : 10000,
+          "proj_name" : "hx-test",
+          "sub_name" : "recyclersink_sub",
+          "bucket_name" : "recycler"
+        }
+      }
+    },
+    "google_storage_bucket" : {
+      "recycler" : {
+        "name" : "recycler",
+        "force_destroy" : true,
+        "location" : "EU"
+      }
+    },
+    "googlecli_dataflow" : {
+      "recycler" : {
+        "name" : "recycler",
+        "classpath" : "/usr/local/lib/angleddream-bundled-0.1-ALPHA.jar:/usr/local/lib/recycler-0.1-ALPHA.jar",
+        "class" : "com.acacia.angleddream.Main",
+        "depends_on" : [ "google_pubsub_topic.recyclersink_in", "googlecli_container_replica_controller.rec-source", "google_pubsub_topic.recycler_err", "google_pubsub_topic.rec_out" ],
+        "optional_args" : {
+          "maxNumWorkers" : "1",
+          "numWorkers" : "1",
+          "zone" : "europe-west1-c",
+          "workerMachineType" : "n1-standard-1",
+          "stagingLocation" : "gs://recycler-test/recycler",
+          "pubsubTopic" : "projects/hx-test/topics/rec_out",
+          "pipelineName" : "recycler",
+          "errorPipelineName" : "recycler_err",
+          "outputTopics" : "projects/hx-test/topics/recyclersink_in"
+        }
+      }
+    }
+  }}
