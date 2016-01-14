@@ -9,6 +9,7 @@ package com.acacia.recycler;
 
 import com.acacia.sdk.AbstractTransform;
 import com.acacia.sdk.AbstractTransformComposer;
+import com.acacia.sdk.GenericDataflowAppException;
 import com.google.auto.service.AutoService;
 import com.google.cloud.dataflow.sdk.transforms.DoFn;
 import org.json.JSONObject;
@@ -21,19 +22,19 @@ public class Recycler extends AbstractTransform  {
     private static int MIN_RETRY_SECONDS = 5; // 5 seconds
     
     @Override
-    public String transform(String s) {
+    public String transform(String s) throws GenericDataflowAppException {
         JSONObject message;
         try {
             message = new JSONObject(s);
         } catch (Exception e){
-            return s + " not a json object, error is: " + e.getMessage();
+            throw new GenericDataflowAppException(s + "<- message is not a json object, error is: " + e.getMessage());
         }
         
         // retry check
         int error_count = message.optInt("error_count") + 1;
         if (error_count >= MAX_ERROR_COUNT) {
             //  add a write somewhere later.  make sure the rest works first
-            return null;
+            throw new GenericDataflowAppException(message.toString());
         }
         
         // wait check

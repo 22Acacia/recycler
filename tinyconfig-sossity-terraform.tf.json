@@ -47,10 +47,7 @@
           "username" : "hx",
           "password" : "hstack"
         },
-        "zone" : "europe-west1-c",
-        "node_config" : {
-          "oauth_scopes" : [ "https://www.googleapis.com/auth/compute", "https://www.googleapis.com/auth/devstorage.read_only", "https://www.googleapis.com/auth/logging.write", "https://www.googleapis.com/auth/monitoring", "https://www.googleapis.com/auth/cloud-platform" ]
-        }
+        "zone" : "europe-west1-c"
       }
     },
     "googlecli_container_replica_controller" : {
@@ -73,7 +70,7 @@
         "zone" : "europe-west1-c",
         "env_args" : {
           "num_retries" : 3,
-          "batch_size" : 10000,
+          "batch_size" : 1000,
           "proj_name" : "hx-test",
           "sub_name" : "recyclersink_sub",
           "bucket_name" : "recycler"
@@ -101,7 +98,7 @@
           "stagingLocation" : "gs://recycler-test/recycler",
           "pubsubTopic" : "projects/hx-test/topics/rec_out",
           "pipelineName" : "recycler",
-          "errorPipelineName" : "recycler_err",
+          "errorPipelineName" : "projects/hx-test/topics/recycler_err",
           "outputTopics" : "projects/hx-test/topics/recyclersink_in"
         }
       }

@@ -1,4 +1,4 @@
-package com.acacia.samples;
+package com.acacia.recycler;
 
 import com.acacia.sdk.AbstractTransform;
 import com.acacia.sdk.AbstractTransformComposer;
