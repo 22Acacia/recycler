@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 
 @AutoService(AbstractTransform.class)
 public class Recycler extends AbstractTransform  {
-    private static int MAX_ERROR_COUNT = 5;
-    private static int MIN_RETRY_SECONDS = 5; // 5 seconds
+    private int MAX_ERROR_COUNT = 5;
+    private int MIN_RETRY_SECONDS = 300; // 5 minutes
     
     @Override
     public String transform(String s) throws GenericDataflowAppException {
@@ -60,6 +60,14 @@ public class Recycler extends AbstractTransform  {
         message.append("path", "recycler");
         
         return message.toString();
+    }
+    
+    public void setMinRetrySeconds(int minRetry) {
+        MIN_RETRY_SECONDS = minRetry;
+    }
+
+    public void setMaxErrorCount(int maxErrorCount) {
+        MAX_ERROR_COUNT = maxErrorCount;
     }
 
     public Recycler() {

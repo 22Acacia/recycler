@@ -36,6 +36,7 @@ public class RecyclerTest
     protected void setUp() 
     {
         testRecycler = new Recycler();
+        testRecycler.setMinRetrySeconds(5);
     }
     
     /**
