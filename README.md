@@ -10,3 +10,6 @@ recycle messages from the error queue back to the input until they fail too much
 - if error_counter meets or exceeds the threshold, the message is written to 
   the dead letter location for processing by something else
 - else write the message to the original "input" topic
+- if a message has been seen again in under 5 minutes (default), pause and wait
+  for full retry gap.  prevents short lived, transient network errors from 
+  flushing large amounts of messages down the quickly retried toilet
